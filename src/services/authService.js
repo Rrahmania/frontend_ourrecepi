@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5010/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://uas-lab-pemograma-web-our-receipe.vercel.app/api';
 
 const authService = {
   // Register
@@ -114,3 +114,4 @@ const authService = {
 };
 
 export default authService;
+
