@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './RecipeCard.css';
+import './Recipecard.css';
 
 const RecipeCard = ({ recipe }) => {
   const {
@@ -112,3 +112,4 @@ const RecipeCard = ({ recipe }) => {
 };
 
 export default RecipeCard;
+
