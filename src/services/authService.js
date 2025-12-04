@@ -1,4 +1,7 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://uas-lab-pemograma-web-our-receipe.vercel.app/api';
+let API_URL = import.meta.env.VITE_API_URL || 'https://uas-lab-pemograma-web-our-receipe.vercel.app/api';
+API_URL = API_URL.trim();
+if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
+if (!API_URL.endsWith('/api')) API_URL = API_URL + '/api';
 
 const authService = {
   // Register
@@ -114,4 +117,3 @@ const authService = {
 };
 
 export default authService;
-
