@@ -75,7 +75,8 @@ const DetailResep = () => {
         // If user is authenticated and recipe appears server-managed, call backend
         if (token && recipe.userId) {
             try {
-                const res = await fetch(`http://localhost:5010/api/recipes/${recipe.id}`, {
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5010/api';
+                const res = await fetch(`${API_URL}/recipes/${recipe.id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
