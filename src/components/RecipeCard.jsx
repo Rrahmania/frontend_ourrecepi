@@ -1,114 +1,108 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import './RecipeCard.css';
+/* src/components/RecipeCard.css */
 
-const RecipeCard = ({ recipe }) => {
-  const {
-    id,
-    name,
-    categories, // ✅ BENAR: dari resep.js
-    rating,
-    image 
-  } = recipe;
+.resep-card-link {
+    text-decoration: none; 
+    color: inherit;
+}
 
-  const { user, token } = useAuth();
+/* --- Kartu Resep dengan BORDER KUNING (Sesuai Gambar 2) --- */
+.resep-card {
+    background: white;
+    /* Border KUNING CERAH tebal 3px */
+    border: 3px solid #FFD700; 
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+    color: #DB944B;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease-in-out;
+    height: 100%;
+}
+.resep-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
 
-  const canDelete = () => {
-    if (!user) return false;
-    if (recipe.userId) return (recipe.userId === (user.id || user.uid || user.name));
-    if (recipe.owner && recipe.owner.id) return (recipe.owner.id === (user.id || user.uid || user.name));
-    return false;
-  };
+.resep-card-img {
+    width: 100%;
+    /* Tinggi gambar lebih kecil, sesuai gambar */
+    height: 180px; 
+    object-fit: cover;
+    /* Border bawah juga 3px kuning */
+    border-bottom: 3px solid #FFD700; 
+}
 
-  const handleDelete = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+.resep-card-info {
+    padding: 15px;
+    text-align: left;
+    flex-grow: 1;
+}
 
-    if (!canDelete()) {
-      alert('Anda tidak memiliki izin untuk menghapus resep ini.');
-      return;
-    }
+.resep-card-title {
+    font-size: 1.2em;
+    margin-bottom: 8px;
+    color: #DB944B; 
+    font-weight: bold;
+}
 
-    const ok = window.confirm('Yakin ingin menghapus resep ini?');
-    if (!ok) return;
+/* --- Style RATING --- */
+.rating-stars {
+    display: block;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: gold; 
+}
 
-    // If server-managed and we have token, call backend
-    if (token && recipe.userId) {
-      try {
-        const res = await fetch(`http://localhost:5010/api/recipes/${recipe.id}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          alert(`Gagal menghapus resep: ${data.message || res.statusText}`);
-          return;
-        }
-        // Notify listeners and refresh
-        window.dispatchEvent(new Event('storage'));
-        alert('Resep berhasil dihapus');
-        return;
-      } catch (err) {
-        console.error('Error deleting recipe', err);
-        alert('Terjadi error saat menghapus resep dari server');
-        return;
-      }
-    }
+.rating-value {
+    font-size: 0.9em;
+    color: #666; 
+    margin-left: 5px;
+    font-weight: normal;
+}
 
-    // Fallback: localStorage
-    try {
-      const saved = JSON.parse(localStorage.getItem('recipes')) || [];
-      const filtered = saved.filter(r => r.id !== recipe.id && r.id.toString() !== id.toString());
-      localStorage.setItem('recipes', JSON.stringify(filtered));
-      window.dispatchEvent(new Event('storage'));
-      alert('Resep berhasil dihapus');
-    } catch (err) {
-      console.error('Error deleting local recipe', err);
-      alert('Gagal menghapus resep lokal');
-    }
-  };
+.resep-card-category {
+    font-size: 0.9em;
+    color: #555; 
+    margin-top: 10px;
+}
 
-  const renderRating = (rating) => {
-    // ... kode rating tetap
-  };
-  
-  const categoryDisplay = categories 
-    ? (Array.isArray(categories) ? categories.join(', ') : categories)
-    : 'Tidak Ada Kategori'; // ✅ BENAR: handle categories array
+.card-delete-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #ff6b6b;
+    color: #ff6b6b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    transition: transform 120ms ease, background 120ms ease, color 120ms ease;
+    z-index: 10;
+}
+.card-delete-btn:hover {
+    background: #ff6b6b;
+    color: #fff;
+    transform: translateY(-2px) scale(1.04);
+}
 
-  return (
-    <Link to={`/resep/${id}`} className='resep-card-link'>
-      <div className='resep-card'> 
-            {image ? (
-                <img 
-                  src={image} 
-                  alt={name} 
-                  className='resep-card-img'
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
-                  }}
-                />
-            ) : (
-                <div className='img-placeholder'>
-                    <span className='recipe-emoji'>👨‍🍳</span>
-                </div>
-            )}
+.resep-card { 
+    position: relative; 
+}
 
-            <div className='resep-card-info'>
-                { canDelete() && (
-                  <button className="card-delete-btn" onClick={handleDelete} aria-label="Hapus resep">🗑️</button>
-                ) }
-                <h3 className='resep-card-title'>{name}</h3>
-                {renderRating(rating)}
-                <p className='resep-card-category'>
-                    Kategori: {categoryDisplay}
-                </p>
-            </div>
-        </div>
-    </Link>
-  );
-};
-
-export default RecipeCard;
+@media (max-width: 600px) {
+  .card-delete-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
+    right: 8px;
+    top: 8px;
+  }
+}
