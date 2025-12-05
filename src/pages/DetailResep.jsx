@@ -143,6 +143,8 @@ const DetailResep = () => {
             const API_URL = import.meta.env.VITE_API_URL || 'https://backend-ourrecepi2.onrender.com/api';
             const token = localStorage.getItem('token');
 
+            console.log('Sending rating:', { recipeId: recipe.id, score: rate, token: !!token });
+
             const response = await fetch(`${API_URL}/ratings`, {
                 method: 'POST',
                 headers: {
@@ -155,15 +157,21 @@ const DetailResep = () => {
                 })
             });
 
+            console.log('Rating response status:', response.status);
+
             if (response.ok) {
+                const data = await response.json();
+                console.log('Rating saved:', data);
                 setUserRating(rate);
-                localStorage.setItem(`recipe-${id}-rating`, rate); // Cache lokal juga
+                localStorage.setItem(`recipe-${id}-rating`, rate);
             } else {
                 const error = await response.json().catch(() => ({}));
+                console.error('Rating error response:', error);
                 alert(`Gagal menyimpan rating: ${error.message || response.statusText}`);
             }
         } catch (err) {
             console.error('Rating error:', err);
+            alert(`Error: ${err.message}`);
             // Fallback: simpan lokal saja
             setUserRating(rate);
             localStorage.setItem(`recipe-${id}-rating`, rate);
