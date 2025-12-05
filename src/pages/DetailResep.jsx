@@ -26,7 +26,19 @@ const DetailResep = () => {
                 
                 if (response.ok) {
                     const data = await response.json();
-                    setRecipe(data.recipe);
+                    let recipe = data.recipe;
+                    
+                    // Pull image from initialRecipes if backend image is empty
+                    if (!recipe.image) {
+                        const initialRecipe = initialRecipes.find(
+                            r => r.name === recipe.title || r.name === recipe.name
+                        );
+                        if (initialRecipe?.image) {
+                            recipe.image = initialRecipe.image;
+                        }
+                    }
+                    
+                    setRecipe(recipe);
                 } else {
                     // Fallback to localStorage if backend not found
                     const savedRecipes = JSON.parse(localStorage.getItem('recipes')) || [];
