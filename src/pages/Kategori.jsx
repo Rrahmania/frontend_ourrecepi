@@ -57,16 +57,20 @@ const Kategori = () => {
     let filtered = allRecipes;
     
     if (activeCategory !== 'Semua Resep') {
-        filtered = allRecipes.filter(recipe => 
-            recipe.categories && recipe.categories.includes(activeCategory)
-        );
+        filtered = allRecipes.filter(recipe => {
+          // Handle both formats: backend (category) and localStorage (categories)
+          const cats = recipe.categories || (recipe.category ? [recipe.category] : []);
+          return cats.includes(activeCategory);
+        });
     }
     
     if (searchTerm) {
         const lowerCaseSearch = searchTerm.toLowerCase();
-        filtered = filtered.filter(recipe => 
-            recipe.name.toLowerCase().includes(lowerCaseSearch)
-        );
+        // Handle both formats: backend (title) and localStorage (name)
+        filtered = filtered.filter(recipe => {
+          const name = recipe.name || recipe.title || '';
+          return name.toLowerCase().includes(lowerCaseSearch);
+        });
     }
     
     return filtered;
