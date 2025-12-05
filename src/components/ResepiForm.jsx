@@ -113,15 +113,14 @@ const RecipeForm = () => {
         imageBase64 = await convertToBase64(formData.image);
       }
       
-      // 2. Persiapkan data resep
+      // 2. Persiapkan data resep (match backend field names)
       const newRecipe = {
-        name: formData.title,
-        categories: formData.categories,
+        title: formData.title,
+        category: formData.categories[0] || 'Umum', // Backend expects single category, use first one
         image: imageBase64 || '',
-        rating: 0,
         description: formData.description,
         ingredients: formData.ingredients.filter(ing => ing.trim() !== ''),
-        steps: formData.steps.filter(step => step.trim() !== '')
+        instructions: formData.steps.filter(step => step.trim() !== '')
       };
 
       // 3. Kirim ke backend API
