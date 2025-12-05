@@ -107,17 +107,11 @@ const RecipeForm = () => {
     }
     
     try {
-      // 1. Konversi File ke Base64 (jika ada gambar)
-      let imageBase64 = '';
-      if (formData.image && formData.image instanceof File) {
-        imageBase64 = await convertToBase64(formData.image);
-      }
-      
       // 2. Persiapkan data resep (match backend field names)
       const newRecipe = {
         title: formData.title,
         category: formData.categories[0] || 'Umum', // Backend expects single category, use first one
-        image: imageBase64 || '',
+        image: '', // TODO: Implement image upload separately
         description: formData.description,
         ingredients: formData.ingredients.filter(ing => ing.trim() !== ''),
         instructions: formData.steps.filter(step => step.trim() !== '').join('\n') // Join steps into text
