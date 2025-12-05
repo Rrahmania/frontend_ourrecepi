@@ -9,19 +9,35 @@ const Kategori = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [allRecipes, setAllRecipes] = useState([]);
 
-  // Load resep dari localStorage
+  // Load resep dari backend + localStorage
   useEffect(() => {
-    const loadRecipes = () => {
+    const loadRecipes = async () => {
       try {
-        const savedRecipes = JSON.parse(localStorage.getItem('recipes')) || [];
-        setAllRecipes([...initialRecipes, ...savedRecipes]);
+        // Try to fetch from backend first
+        const API_URL = import.meta.env.VITE_API_URL || 'https://backend-ourrecepi2.onrender.com/api';
+        const response = await fetch(`${API_URL}/recipes`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Combine backend recipes with local saved ones
+          const savedRecipes = JSON.parse(localStorage.getItem('recipes')) || [];
+          const allRecipesData = [...(data.recipes || []), ...savedRecipes];
+          setAllRecipes(allRecipesData);
+        } else {
+          // Fallback to localStorage only
+          const savedRecipes = JSON.parse(localStorage.getItem('recipes')) || [];
+          setAllRecipes([...initialRecipes, ...savedRecipes]);
+        }
       } catch (error) {
         console.error('Error loading recipes:', error);
-        setAllRecipes(initialRecipes);
+        // Fallback to localStorage on error
+        const savedRecipes = JSON.parse(localStorage.getItem('recipes')) || [];
+        setAllRecipes([...initialRecipes, ...savedRecipes]);
       }
     };
     
     loadRecipes();
+    // Still listen to storage events for local changes
     window.addEventListener('storage', loadRecipes);
     
     return () => {
