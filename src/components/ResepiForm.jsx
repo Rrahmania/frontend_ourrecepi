@@ -143,7 +143,7 @@ const RecipeForm = () => {
 
       // 5. Alert & redirect
       alert('Resep berhasil ditambahkan!');
-      window.location.href = `/resep/${savedRecipe.id}`;
+      const recipeId = savedRecipe.recipe?.id || savedRecipe.id; window.location.href = `/resep/${recipeId}`;
       
     } catch (error) {
       console.error('Error saving recipe:', error);
