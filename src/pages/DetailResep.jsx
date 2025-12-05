@@ -18,19 +18,42 @@ const DetailResep = () => {
     };
 
     useEffect(() => {
-        const savedRecipes = JSON.parse(localStorage.getItem('recipes')) || [];
-        const allRecipes = [...initialRecipes, ...savedRecipes];
-        
-        const recipeId = parseInt(id);
-        const foundRecipe = allRecipes.find(r => r.id === recipeId || r.id.toString() === id);
-        setRecipe(foundRecipe);
+        const fetchRecipe = async () => {
+            try {
+                // Try to fetch from backend first
+                const API_URL = import.meta.env.VITE_API_URL || 'https://backend-ourrecepi2.onrender.com/api';
+                const response = await fetch(`${API_URL}/recipes/${id}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setRecipe(data.recipe);
+                } else {
+                    // Fallback to localStorage if backend not found
+                    const savedRecipes = JSON.parse(localStorage.getItem('recipes')) || [];
+                    const allRecipes = [...initialRecipes, ...savedRecipes];
+                    const recipeId = parseInt(id);
+                    const foundRecipe = allRecipes.find(r => r.id === recipeId || r.id.toString() === id);
+                    setRecipe(foundRecipe);
+                }
+            } catch (error) {
+                console.error('Error fetching recipe:', error);
+                // Fallback to localStorage on error
+                const savedRecipes = JSON.parse(localStorage.getItem('recipes')) || [];
+                const allRecipes = [...initialRecipes, ...savedRecipes];
+                const recipeId = parseInt(id);
+                const foundRecipe = allRecipes.find(r => r.id === recipeId || r.id.toString() === id);
+                setRecipe(foundRecipe);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRecipe();
         
         const storedFav = localStorage.getItem(`recipe-${id}-favorite`) === 'true';
         const storedRating = parseInt(localStorage.getItem(`recipe-${id}-rating`)) || 0;
         setIsFavorite(storedFav);
         setUserRating(storedRating);
-        
-        setLoading(false);
     }, [id]);
 
     const toggleFavorite = () => {
