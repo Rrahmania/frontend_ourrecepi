@@ -109,15 +109,42 @@ const DetailResep = () => {
         }
     };
 
-    const handleRating = (rate) => {
+    const handleRating = async (rate) => {
         if (!isUserLoggedIn()) {
             alert("Anda harus login untuk memberi nilai (rating) resep ini!");
             navigate('/login');
             return;
         }
 
-        setUserRating(rate);
-        localStorage.setItem(`recipe-${id}-rating`, rate);
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || 'https://backend-ourrecepi2.onrender.com/api';
+            const token = localStorage.getItem('token');
+
+            const response = await fetch(`${API_URL}/ratings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    recipeId: recipe.id,
+                    rating: rate
+                })
+            });
+
+            if (response.ok) {
+                setUserRating(rate);
+                localStorage.setItem(`recipe-${id}-rating`, rate); // Cache lokal juga
+            } else {
+                const error = await response.json().catch(() => ({}));
+                alert(`Gagal menyimpan rating: ${error.message || response.statusText}`);
+            }
+        } catch (err) {
+            console.error('Rating error:', err);
+            // Fallback: simpan lokal saja
+            setUserRating(rate);
+            localStorage.setItem(`recipe-${id}-rating`, rate);
+        }
     };
 
     const renderStars = (currentRating) => {

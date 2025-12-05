@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import './ResepiForm.css';
+import { useAuth } from '../context/AuthContext';
 
 const RecipeForm = () => { 
+  const { token } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -97,6 +99,12 @@ const RecipeForm = () => {
       setLoading(false);
       return;
     }
+
+    if (!token) {
+      alert('Anda harus login untuk menambah resep!');
+      setLoading(false);
+      return;
+    }
     
     try {
       // 1. Konversi File ke Base64 (jika ada gambar)
@@ -105,33 +113,34 @@ const RecipeForm = () => {
         imageBase64 = await convertToBase64(formData.image);
       }
       
-      // 2. Buat resep baru sesuai struktur resep.js
-      const storedUser = JSON.parse(localStorage.getItem('user')) || null;
-
+      // 2. Persiapkan data resep
       const newRecipe = {
-        id: Date.now(), // ID unik
         name: formData.title,
         categories: formData.categories,
-        image: imageBase64 || '', // Simpan sebagai base64
-        rating: 0, // Default rating 0
+        image: imageBase64 || '',
+        rating: 0,
         description: formData.description,
-        bahan: formData.ingredients
-          .filter(ing => ing.trim() !== '')
-          .map(ing => `- ${ing}`)
-          .join('\n'),
-        langkah: formData.steps
-          .filter(step => step.trim() !== '')
-          .map((step, index) => `${index + 1}. ${step}`)
-          .join('\n'),
-        createdAt: new Date().toISOString()
-        ,
-        // Simpan informasi uploader jika tersedia
-        owner: storedUser ? { id: storedUser.uid || storedUser.id || storedUser.name, name: storedUser.name || storedUser.email } : null
+        ingredients: formData.ingredients.filter(ing => ing.trim() !== ''),
+        steps: formData.steps.filter(step => step.trim() !== '')
       };
 
-      // 3. Simpan ke localStorage
-      const existingRecipes = JSON.parse(localStorage.getItem('recipes')) || [];
-      localStorage.setItem('recipes', JSON.stringify([...existingRecipes, newRecipe]));
+      // 3. Kirim ke backend API
+      const API_URL = import.meta.env.VITE_API_URL || 'https://backend-ourrecepi2.onrender.com/api';
+      const response = await fetch(`${API_URL}/recipes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newRecipe)
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `Gagal menyimpan resep (${response.status})`);
+      }
+
+      const savedRecipe = await response.json();
 
       // 4. Reset form
       setFormData({
@@ -139,15 +148,13 @@ const RecipeForm = () => {
       });
       setImagePreview(null);
 
-      // 5. Tampilkan alert & redirect
+      // 5. Alert & redirect
       alert('Resep berhasil ditambahkan!');
-      
-      // 6. Redirect ke halaman detail resep
-      window.location.href = `/resep/${newRecipe.id}`;
+      window.location.href = `/resep/${savedRecipe.id}`;
       
     } catch (error) {
       console.error('Error saving recipe:', error);
-      alert('Terjadi kesalahan saat menyimpan resep');
+      alert(`Terjadi kesalahan: ${error.message}`);
     } finally {
       setLoading(false);
     }
