@@ -120,7 +120,7 @@ const RecipeForm = () => {
         image: imageBase64 || '',
         description: formData.description,
         ingredients: formData.ingredients.filter(ing => ing.trim() !== ''),
-        instructions: formData.steps.filter(step => step.trim() !== '')
+        instructions: formData.steps.filter(step => step.trim() !== '').join('\n') // Join steps into text
       };
 
       // 3. Kirim ke backend API
