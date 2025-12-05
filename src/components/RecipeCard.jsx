@@ -1,16 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { initialRecipes } from '../data/resep';
 import './RecipeCard.css';
 
 const RecipeCard = ({ recipe }) => {
-  const {
-    id,
-    name,
-    categories, // ✅ BENAR: dari resep.js
-    rating,
-    image 
-  } = recipe;
+  // Handle both backend (title/category) and localStorage (name/categories) formats
+  const id = recipe.id;
+  const name = recipe.name || recipe.title;
+  const categories = recipe.categories || (recipe.category ? [recipe.category] : []);
+  const rating = recipe.rating || 0;
+  
+  // Get image: from recipe, or from initialRecipes by name match, or placeholder
+  let image = recipe.image;
+  if (!image) {
+    const initialRecipe = initialRecipes.find(
+      r => r.name === name || r.name === recipe.title || r.name === recipe.name
+    );
+    image = initialRecipe?.image;
+  }
 
   const { user, token } = useAuth();
 
