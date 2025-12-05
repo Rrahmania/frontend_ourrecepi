@@ -143,7 +143,7 @@ const DetailResep = () => {
             const API_URL = import.meta.env.VITE_API_URL || 'https://backend-ourrecepi2.onrender.com/api';
             const token = localStorage.getItem('token');
 
-            console.log('Sending rating:', { recipeId: recipe.id, score: rate, token: !!token });
+            const payload = { recipeId: String(recipe.id), score: Number(rate) }; if (!payload.recipeId || !payload.score) { alert('Error: Invalid rating data'); return; } console.log('Rating payload:', payload);
 
             const response = await fetch(`${API_URL}/ratings`, {
                 method: 'POST',
@@ -151,10 +151,7 @@ const DetailResep = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    recipeId: recipe.id,
-                    score: rate
-                })
+                body: JSON.stringify(payload)
             });
 
             console.log('Rating response status:', response.status);
@@ -310,3 +307,7 @@ const DetailResep = () => {
 };
 
 export default DetailResep;
+
+
+
+
