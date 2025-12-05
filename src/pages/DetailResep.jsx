@@ -151,7 +151,7 @@ const DetailResep = () => {
                 },
                 body: JSON.stringify({
                     recipeId: recipe.id,
-                    rating: rate
+                    score: rate
                 })
             });
 
